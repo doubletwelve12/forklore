@@ -90,40 +90,20 @@ $platformGuide = [
     'main' => [
         'question' => 'What would you like to learn about using Folklore?',
         'options' => [
-            ['id' => 'like_recipe', 'text' => 'How to like a recipe'],
-            ['id' => 'comment_recipe', 'text' => 'How to comment on recipes'],
-            ['id' => 'save_recipe', 'text' => 'How to save recipes'],
-            ['id' => 'share_recipe', 'text' => 'How to share recipes'],
-            ['id' => 'create_account', 'text' => 'How to create an account']
-            // ['id' => 'profile_settings', 'text' => 'Managing your profile']
+            ['id' => 'create_account', 'text' => 'How to create an account'],
+            ['id' => 'profile_settings', 'text' => 'Managing your profile']
         ]
     ],
     'responses' => [
-        'like_recipe' => [
-            'title' => 'How to Like a Recipe',
-            'content' => 'To like a recipe on Folklore:<br>• Open any recipe by clicking on it<br>• Look for the heart ❤️ icon near the recipe title<br>• Click the heart to add it to your favorites<br>• The heart will turn red when liked<br>• View all your liked recipes in "My Favorites" section<br>• You can unlike by clicking the heart again'
-        ],
-        'comment_recipe' => [
-            'title' => 'How to Comment on a Recipe',
-            'content' => 'To leave a comment on a recipe:<br>• Open a recipe by clicking on it<br>• Scroll down to the bottom until you see the comment section<br>• Click on the comment text box<br>• Type your thoughts, tips, or feedback<br>• Click the "Submit Comment" button to post<br>• Your comment will appear after moderation'
-        ],
-        'save_recipe' => [
-            'title' => 'How to Save Recipes',
-            'content' => 'To save recipes for later cooking:<br>• Click the bookmark 🔖 icon on any recipe card<br>• Access saved recipes from "My Saved Recipes" in your profile<br>• Create custom collections to organize recipes<br>• Add notes to your saved recipes<br>• Share your collections with friends and family<br>• Export recipes to PDF for offline use'
-        ],
-        'share_recipe' => [
-            'title' => 'How to Share Recipes',
-            'content' => 'To share recipes with others:<br>• Open the recipe you want to share<br>• Click the share 📤 icon<br>• Choose from social media, email, or copy link<br>• Send the link to friends and family<br>• Share via WhatsApp, Facebook, or Twitter<br>• Create a shared meal plan with others'
-        ],
         'create_account' => [
             'title' => 'How to Create an Account',
             'content' => 'To create your Folklore account:<br>• Click "Sign Up" button<br>• Enter your username, email address and create a password<br>• Start exploring and saving recipes!'
         ]
-        // ,
-        // 'profile_settings' => [
-        //     'title' => 'Managing Your Profile',
-        //     'content' => 'To manage your profile settings:<br>• Click on your profile picture/name<br>• Select "Profile Settings"<br>• Update your dietary preferences and restrictions<br>• Change your cooking skill level<br>• Set notification preferences<br>• Manage privacy settings<br>• Update contact information'
-        // ]
+        ,
+        'profile_settings' => [
+            'title' => 'Managing Your Profile',
+            'content' => 'To manage your profile settings:<br>• Go to your account/name<br>• Update your username/email/passwaord or dietary preferences<br>• Clicks on Save Changes button'
+        ]
     ]
 ];
 
@@ -633,7 +613,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             
         case 'get_recipe_details':
             $recipe_id = $_POST['recipe_id'];
-            $stmt = $pdo->prepare("SELECT * FROM recipes WHERE recipe_id = ?");
+            $stmt = $pdo->prepare("SELECT * FROM recipe WHERE recipe_id = ?");
             $stmt->execute([$recipe_id]);
             $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
             
@@ -667,7 +647,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 function findRecipesEnhanced($preferences, $pdo) {
     // Convert preferences array to ordered values matching category order
     $orderedPrefs = [];
-    for ($i = 1; $i <= 4; $i++) {
+    for ($i = 1; $i <= 5; $i++) { // Updated to 5 categories based on your data
         if (isset($preferences[$i])) {
             $orderedPrefs[] = $preferences[$i];
         }
@@ -682,19 +662,19 @@ function findRecipesEnhanced($preferences, $pdo) {
     // Strategy 1: Exact match (all preferences)
     $results = findWithMatchCount($orderedPrefs, count($orderedPrefs), $pdo);
     
-    // Strategy 2: High similarity (3 out of 4 matches)
-    if (empty($results) && count($orderedPrefs) >= 3) {
+    // Strategy 2: High similarity (4 out of 5 matches)
+    if (empty($results) && count($orderedPrefs) >= 4) {
         $results = findWithMatchCount($orderedPrefs, count($orderedPrefs) - 1, $pdo);
     }
     
-    // Strategy 3: Medium similarity (2 out of 4 matches)
-    if (empty($results) && count($orderedPrefs) >= 2) {
+    // Strategy 3: Medium similarity (3 out of 5 matches)
+    if (empty($results) && count($orderedPrefs) >= 3) {
         $results = findWithMatchCount($orderedPrefs, count($orderedPrefs) - 2, $pdo);
     }
     
-    // Strategy 4: Any similarity (at least 1 match)
+    // Strategy 4: Any similarity (at least 2 matches)
     if (empty($results)) {
-        $results = findWithMatchCount($orderedPrefs, 1, $pdo);
+        $results = findWithMatchCount($orderedPrefs, 2, $pdo);
     }
     
     // Strategy 5: Popular recipes fallback
@@ -720,12 +700,12 @@ function findWithMatchCount($preferences, $minMatches, $pdo) {
     
     $query = "
         SELECT r.*, COUNT(DISTINCT ro.option_id) as match_count
-        FROM recipes r
+        FROM recipe r
         JOIN recipe_options ro ON r.recipe_id = ro.recipe_id
         WHERE ro.option_id IN ($placeholders)
         GROUP BY r.recipe_id
         HAVING match_count >= ?
-        ORDER BY match_count DESC, r.name
+        ORDER BY match_count DESC, r.recipe_name
         LIMIT 15
     ";
     
@@ -740,7 +720,7 @@ function getPopularRecipes($pdo) {
     // Get some popular/featured recipes as fallback
     $query = "
         SELECT r.*, 0 as match_count
-        FROM recipes r
+        FROM recipe r
         ORDER BY r.recipe_id DESC
         LIMIT 8
     ";

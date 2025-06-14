@@ -354,23 +354,23 @@ $(document).ready(function() {
     function getEngagingResponse(title) {
         const engagingResponses = {
             // Platform Guide responses
-            'How to Like a Recipe': 'Let me show you how to save your favorite recipes with just one click! ❤️',
-            'How to Comment on a Recipe': 'Sharing your cooking experiences helps our community grow. Here\'s how to leave feedback! 💬',
-            'How to Save Recipes': 'Building your personal recipe collection is so useful. Here\'s the easy way! 🔖',
+            'How to Like a Recipe': 'Great choice! Let me show you how to save your favorite recipes with just one click! ❤️',
+            'How to Comment on a Recipe': 'Perfect! Sharing your cooking experiences helps our community grow. Here\'s how to leave feedback! 💬',
+            'How to Save Recipes': 'Smart thinking! Building your personal recipe collection is so useful. Here\'s the easy way! 🔖',
             'How to Share Recipes': 'Wonderful! Spreading delicious recipes with friends makes cooking even more fun! 📤',
-            'How to Create an Account': 'Getting started with Folklore will unlock so many features for you! 🌟',
-            // 'Managing Your Profile': 'Good question! Personalizing your profile helps us give you better recommendations! ⚙️',
+            'How to Create an Account': 'Excellent! Getting started with Folklore will unlock so many features for you! 🌟',
+            'Managing Your Profile': 'Good question! Personalizing your profile helps us give you better recommendations! ⚙️',
             
             // Cooking Tips responses
             'Essential Knife Skills': 'Fantastic choice! Mastering knife skills will transform your cooking efficiency! 🔪',
-            'Cooking Methods Guide': 'Understanding different cooking methods opens up endless possibilities! 🍳',
-            'Spices and Herbs Guide': 'Spices are the secret to making any dish extraordinary! 🌿',
+            'Cooking Methods Guide': 'Perfect! Understanding different cooking methods opens up endless possibilities! 🍳',
+            'Spices and Herbs Guide': 'Excellent! Spices are the secret to making any dish extraordinary! 🌿',
             'Food Safety Essentials': 'Very important! Keeping your kitchen safe ensures delicious and healthy meals! 🛡️',
-            'Baking Success Tips': 'Baking is both science and art - let me share the secrets! 🧁',
+            'Baking Success Tips': 'Great pick! Baking is both science and art - let me share the secrets! 🧁',
             'Essential Kitchen Tools': 'Smart question! Having the right tools makes cooking so much easier! 🔧',
             
             // Restaurant Guide responses
-            'Find Restaurants Near You': 'Let me help you discover amazing dining spots in your area! 📍',
+            'Find Restaurants Near You': 'Perfect! Let me help you discover amazing dining spots in your area! 📍',
             'Exploring Different Cuisines': 'Exciting! Trying new cuisines is such a delicious adventure! 🌍',
             'Restaurant Etiquette': 'Great thinking! Good etiquette makes dining experiences better for everyone! 🍽️',
             'Making Restaurant Reservations': 'Smart move! Proper reservation skills ensure you get the best tables! 📞',
@@ -427,7 +427,7 @@ $(document).ready(function() {
         
         $('#recipes-list').empty();
         recipes.forEach(function(recipe) {
-            const totalTime = (parseInt(recipe.prep_time) || 0) + (parseInt(recipe.cook_time) || 0);
+            const totalTime = (parseInt(recipe.recipe_preptime) || 0) + (parseInt(recipe.recipe_cookingtime) || 0);
             const similarityScore = recipe.similarity_score || 0;
             
             const recipeCard = $(`
@@ -435,7 +435,7 @@ $(document).ready(function() {
                     ${similarityScore > 0 ? `<div class="similarity-badge">${similarityScore}% match</div>` : ''}
                     <div class="recipe-image" style="background-image: url('${recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'}')"></div>
                     <div class="recipe-content">
-                        <h3 class="recipe-title">${recipe.name}</h3>
+                        <h3 class="recipe-title">${recipe.recipe_name}</h3>
                         <p class="recipe-description">${recipe.description || 'A delicious recipe crafted with traditional techniques and authentic flavors.'}</p>
                         <div class="recipe-meta">
                             <span class="meta-item">
@@ -479,20 +479,20 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     const recipe = response.recipe;
-                    const instructionsFormatted = formatInstructions(recipe.instructions);
-                    const ingredientsFormatted = formatIngredients(recipe.ingredients);
-                    const totalTime = (parseInt(recipe.prep_time) || 0) + (parseInt(recipe.cook_time) || 0);
+                    const instructionsFormatted = formatInstructions(recipe.recipe_cookstep);
+                    const ingredientsFormatted = formatIngredients(recipe.recipe_ingredient);
+                    const totalTime = (parseInt(recipe.recipe_preptime) || 0) + (parseInt(recipe.recipe_cookingtime) || 0);
                     
                     $('#recipe-details').html(`
                         <div class="recipe-header">
-                            <h2>${recipe.name}</h2>
+                            <h2>${recipe.recipe_name}</h2>
                             <div class="recipe-image-large" style="background-image: url('${recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'}')"></div>
                             <div class="recipe-meta-large">
                                 <span class="meta-item-large">
-                                    <i class="fas fa-clock"></i> Prep: ${recipe.prep_time || 15} min
+                                    <i class="fas fa-clock"></i> Prep: ${recipe.recipe_preptime || 15} min
                                 </span>
                                 <span class="meta-item-large">
-                                    <i class="fas fa-fire"></i> Cook: ${recipe.cook_time || 15} min
+                                    <i class="fas fa-fire"></i> Cook: ${recipe.recipe_cookingtime || 15} min
                                 </span>
                                 <span class="meta-item-large">
                                     <i class="fas fa-users"></i> Serves: ${recipe.servings || 4}

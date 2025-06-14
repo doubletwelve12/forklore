@@ -1,11 +1,21 @@
 <?php
 include('../dbconnect.php');
 
-$query = "SELECT * FROM recipe WHERE recipe_id = 1"; // Change this to the recipe ID you want to display
+// Get recipe ID dynamically from URL (fallback to 1 if not set)
+$recipe_id = isset($_GET['recipe_id']) ? intval($_GET['recipe_id']) : 1;
+
+$query = "SELECT * FROM recipe WHERE recipe_id = $recipe_id";
 $result = $conn->query($query);
+
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
 
 $recipe = $result->fetch_assoc();
 
+if (!$recipe) {
+    die("No recipe found with recipe_id = $recipe_id");
+}
 ?>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -38,7 +48,7 @@ $recipe = $result->fetch_assoc();
 	<img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/chili.jpg">
 	<p class="quote" >My grandpappy used to make this chili over the campfire under the Texas stars. The secret ingredient was a little squeeze of scorpion venom in the pot.<span class="cite">-Chris</span></p>
 </div>
-
+<!-- 
 <div class="recipe-text">
 	<h2>Ingredients <i class="slidetoggle fa fa-arrow-up right"></i></h2>
 	<div class="inner-text">
@@ -156,6 +166,66 @@ $recipe = $result->fetch_assoc();
 	<textarea>Add Your Own Notes Here! </textarea>
 
 <div id="create">+</div>
+</div>
+
+<script src="../recipe/recipe.js"></script> -->
+
+<div class="recipe-image">
+	<div class="ingredient-image"></div>
+	<img src="<?php echo htmlspecialchars($recipe['image_url']); ?>">
+	<p class="quote"><?php echo htmlspecialchars($recipe['description']); ?></p>
+</div>
+
+<div class="recipe-text">
+	<h2>Ingredients <i class="slidetoggle fa fa-arrow-up right"></i></h2>
+	<div class="inner-text">
+		<ul class="need">
+		    <?php
+		    $ingredients = explode(',', $recipe['recipe_ingredient']);
+		    foreach ($ingredients as $ingredient) {
+		        echo "<li><i class='fa fa-square-o'></i> " . htmlspecialchars(trim($ingredient)) . "</li>";
+		    }
+		    ?>
+		</ul>
+	</div>
+</div>
+
+<div class="recipe-directions">
+	<h2>Directions <i class="slidetoggle fa fa-arrow-up right"></i></h2>
+	<div class="inner-directions">
+		<ol>
+			<?php
+			$steps = explode('.', $recipe['recipe_cookstep']);
+			foreach ($steps as $step) {
+			    $step = trim($step);
+			    if (!empty($step)) {
+			        echo "<li>" . htmlspecialchars($step) . ".</li>";
+			    }
+			}
+			?>
+		</ol>
+	</div>
+</div>
+
+<div class="comments">
+    <h2>How did your recipe go? <i class="slidetoggle fa fa-arrow-up right"></i></h2>
+    <div class="inner-comments">
+        <form id="comment-form">
+            <label for="comment-name">Your Name:</label>
+            <input type="text" id="comment-name" placeholder="Your Name" required />
+            <label for="comment-content">Your Comment:</label>
+            <textarea id="comment-content" placeholder="Your Comment" required></textarea>
+            <button type="submit">Add Comment</button>
+        </form>
+        <div id="comment-thread"></div>
+    </div>
+</div>
+
+</article>
+
+<div>
+	<textarea>Add Your Own Notes Here! </textarea>
+	<div id="create">+</div>
 </div>
 
 <script src="../recipe/recipe.js"></script>
